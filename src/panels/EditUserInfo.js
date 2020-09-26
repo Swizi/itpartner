@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { platform, IOS } from "@vkontakte/vkui";
 import Panel from "@vkontakte/vkui/dist/components/Panel/Panel";
@@ -14,31 +14,46 @@ import Button from "@vkontakte/vkui/dist/components/Button/Button";
 import Input from "@vkontakte/vkui/dist/components/Input/Input";
 
 import Cell from "@vkontakte/vkui/dist/components/Cell/Cell";
+import ScreenSpinner from "@vkontakte/vkui/dist/components/ScreenSpinner/ScreenSpinner";
 import Switch from "@vkontakte/vkui/dist/components/Switch/Switch";
 
-import "./StartChoosePage.css";
+import "./EditUserInfo.css";
+
+import axios from ".././axios";
 
 const osName = platform();
 
-const StartChoosePage = (props) => {
+const EditUserInfo = (props) => {
   const [localUserInfo, setLocalUserInfo] = useState(props.userInfo || {});
 
-  // useEffect(() => {
-	// 	props.partners.forEach(function (partner, i, partners) {
-	// 	  if (partner.vk_id === props.userInfo.vk_id) {
-	// 		props.setUserInfo(partner);
-	// 		props.setActivePanel("search");
-	// 	  }
-	// 	});
-	//   }, [props.partners, props.userInfo]);
+  const localUpdateUserInfo = ( newUserInfo ) => async ( e ) => {
 
-  // console.log(localUserInfo);
+
+    props.setPopout(<ScreenSpinner size="large" />);
+    await axios.post("/partner/update", {
+      design: newUserInfo.design,
+      frontend: newUserInfo.frontend,
+      backend: newUserInfo.backend,
+      mobile: newUserInfo.mobile,
+      desktop: newUserInfo.desktop,
+      city: newUserInfo.city,
+      website: newUserInfo.website,
+      vk_id: newUserInfo.vk_id,
+      first_name: newUserInfo.first_name,
+      last_name: newUserInfo.last_name,
+      photo: newUserInfo.photo,
+      show_user: newUserInfo.show_user,
+    });
+    // props.setUserInfo(newUserInfo);
+
+    props.setPopout(null);
+  };
 
   return (
     <Panel id={props.id}>
       <PanelHeader
         left={
-          <PanelHeaderButton onClick={props.go} data-to="home">
+          <PanelHeaderButton onClick={props.go} data-to="search">
             {osName === IOS ? <Icon28ChevronBack /> : <Icon24Back />}
           </PanelHeaderButton>
         }
@@ -120,7 +135,7 @@ const StartChoosePage = (props) => {
               placeholder="Сайт-портфолио"
               value={localUserInfo.website}
             />
-            {/* <Checkbox onChange={() => {setLocalUserInfo({...localUserInfo, show_user: !localUserInfo.show_user});}} data-string="show_user" checked={localUserInfo.show_user ? "checked" : ""}>Показывать меня в списке</Checkbox> */}
+            {/* <Checkbox onChange={() => {setLocalUserInfo({...localUserInfo, show_user: !localUserInfo.show_user});}}  data-string="show_user" checked={localUserInfo.show_user ? "checked" : ""}>Показывать меня в списке</Checkbox> */}
             <Cell
               asideContent={
                 <Switch
@@ -138,30 +153,14 @@ const StartChoosePage = (props) => {
               Показывать меня в списке
             </Cell>
             <Button
-              onClick={
-                localUserInfo.design ||
-                localUserInfo.frontend ||
-                localUserInfo.backend ||
-                localUserInfo.mobile || 
-                localUserInfo.desktop
-                  ? props.createUser(localUserInfo)
-                  : null
-              }
+              //   onClick={props.userInfo.design || props.userInfo.frontend || props.userInfo.backend ? props.createUser : null}
+              onClick={localUpdateUserInfo(localUserInfo)}
               data-to="search"
               size="xl"
               mode="primary"
-              style={{
-                opacity:
-                  localUserInfo.design ||
-                  localUserInfo.frontend ||
-                  localUserInfo.backend ||
-                  localUserInfo.mobile ||
-                  localUserInfo.desktop
-                    ? "1"
-                    : "0.6",
-              }}
+              //   style={{opacity: props.userInfo.design || props.userInfo.frontend || props.userInfo.backend ? "1" : "0.6"}}
             >
-              Далее
+              Сохранить
             </Button>
           </FormLayout>
         </Div>
@@ -170,15 +169,14 @@ const StartChoosePage = (props) => {
   );
 };
 
-StartChoosePage.propTypes = {
+EditUserInfo.propTypes = {
   id: PropTypes.string.isRequired,
   go: PropTypes.func.isRequired,
   userInfo: PropTypes.object.isRequired,
   changeUserInfo: PropTypes.func.isRequired,
   createUser: PropTypes.func.isRequired,
-  partners: PropTypes.array.isRequired,
   setUserInfo: PropTypes.func.isRequired,
-  setActivePanel: PropTypes.func.isRequired
+  setPopout: PropTypes.func.isRequired
 };
 
-export default StartChoosePage;
+export default EditUserInfo;
