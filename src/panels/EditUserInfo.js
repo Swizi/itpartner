@@ -44,7 +44,7 @@ const EditUserInfo = (props) => {
       photo: newUserInfo.photo,
       show_user: newUserInfo.show_user,
     });
-    // props.setUserInfo(newUserInfo);
+    props.setUserInfo(newUserInfo);
 
     props.setPopout(null);
   };

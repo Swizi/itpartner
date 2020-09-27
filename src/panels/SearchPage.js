@@ -52,7 +52,6 @@ const SearchPage = (props) => {
     props.partners || []
   );
 
-
   const partnersSearch = (e) => {
     var arrayPartners = filteredPartners;
     setSearchValue(e.currentTarget.value);
@@ -119,6 +118,13 @@ const SearchPage = (props) => {
           }
         });
       }
+      if (props.filterOptions.city !== "") {
+        ex_partners.forEach(function (filteredPartner, i, ex_partners) {
+          if (filteredPartner.city.id.toString() !== props.filterOptions.city) {
+            delete ex_partners[i];
+          }
+        });
+      }
       setFilteredPartners(ex_partners);
       // if ((ex_partners) && (filterOptions.design || filterOptions.frontend || filterOptions.backend)){
       //   setfilteredPartners(ex_partners);
@@ -162,8 +168,9 @@ const SearchPage = (props) => {
       </FormLayout>
       <Group>
         <Div>
-          {filteredPartners.map((partner) => (
+          {filteredPartners.map((partner, index) => (
             <RichCell
+              key={index}
               disabled
               multiline
               style={{
@@ -247,7 +254,8 @@ SearchPage.propTypes = {
   go: PropTypes.func.isRequired,
   partners: PropTypes.array.isRequired,
   setPartners: PropTypes.func.isRequired,
-  userInfo: PropTypes.object.isRequired
+  userInfo: PropTypes.object.isRequired,
+  filterOptions: PropTypes.object.isRequired
 };
 
 export default SearchPage;

@@ -32,7 +32,7 @@ const App = () => {
     backend: false,
     mobile: false,
     desktop: false,
-    city: "",
+    city: {},
     website: "",
     vk_id: 0,
     first_name: "",
@@ -49,6 +49,7 @@ const App = () => {
     backend: false,
     mobile: false,
     desktop: false,
+    city: ""
   });
   // useEffect(() => {setPopout(<ScreenSpinner size="large" />)}, [activePanel]);
 
@@ -104,7 +105,6 @@ const App = () => {
         backend: userInfo.backend,
         mobile: userInfo.mobile,
         desktop: userInfo.desktop,
-        city: userInfo.city,
         website: userInfo.website,
         vk_id: userInfo.vk_id,
         first_name: userInfo.first_name,
@@ -116,6 +116,7 @@ const App = () => {
       ex_obj.first_name = user.first_name;
       ex_obj.last_name = user.last_name;
       ex_obj.photo = user.photo_100;
+      ex_obj.city = user.city;
       setUserInfo(ex_obj);
       await axios.get("/partners/sync").then((response) => {
         setPartners(response.data);
@@ -155,7 +156,8 @@ const App = () => {
       photo: newUserInfo.photo,
       show_user: newUserInfo.show_user,
     });
-    setPopout(null);
+    setActivePanel("search");
+    setPopout(null)
   };
 
   // const updateUserInfo = ( newUserInfo ) => async ( e ) => {
@@ -209,7 +211,18 @@ const App = () => {
       setUserInfo(ex_obj);
     }
   };
-  console.log(partners);
+  // console.log(userInfo);
+
+  var partnersCities = [];
+  partners.forEach(function (partner, i, partners) {
+    let partnersCitiesIds = [];
+    partnersCities.forEach(function (partnerCity, i, partnersCities_ex){
+      partnersCitiesIds.push(partnerCity.id);
+    });
+    if (!(partnersCitiesIds.includes(partner.city.id))){
+      partnersCities.push(partner.city)
+    }
+  });
 
   const modal = (
     <ModalRoot activeModal={activeModal} onClose={() => setActiveModal(null)}>
@@ -289,9 +302,14 @@ const App = () => {
             >
               Desktop разработчик
             </Checkbox>
-            <Select placeholder="Выберите город">
-              {partners.map((partner) => (
-                <option value={partner.city}>{partner.city}</option>
+            <Select placeholder="Выберите город" value={filterOptions.city} onChange={(e) =>
+                setFilterOptions({
+                  ...filterOptions,
+                  city: e.currentTarget.value,
+                })
+              }>
+              {partnersCities.map((partnerCity, index) => (
+                <option key={index} value={partnerCity.id}>{partnerCity.title}</option>
               ))}
             </Select>
           </FormLayoutGroup>
