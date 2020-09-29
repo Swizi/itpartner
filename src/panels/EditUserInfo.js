@@ -17,6 +17,8 @@ import Cell from "@vkontakte/vkui/dist/components/Cell/Cell";
 import ScreenSpinner from "@vkontakte/vkui/dist/components/ScreenSpinner/ScreenSpinner";
 import Switch from "@vkontakte/vkui/dist/components/Switch/Switch";
 
+import bridge from "@vkontakte/vk-bridge";
+
 import "./EditUserInfo.css";
 
 import axios from ".././axios";
@@ -25,10 +27,9 @@ const osName = platform();
 
 const EditUserInfo = (props) => {
   const [localUserInfo, setLocalUserInfo] = useState(props.userInfo || {});
+  const [userStyle, setUserStyle] = useState("client_light");
 
-  const localUpdateUserInfo = ( newUserInfo ) => async ( e ) => {
-
-
+  const localUpdateUserInfo = (newUserInfo) => async (e) => {
     props.setPopout(<ScreenSpinner size="large" />);
     await axios.post("/partner/update", {
       design: newUserInfo.design,
@@ -44,7 +45,6 @@ const EditUserInfo = (props) => {
       photo: newUserInfo.photo,
       show_user: newUserInfo.show_user,
     });
-    props.setUserInfo(newUserInfo);
 
     props.setPopout(null);
   };
@@ -152,6 +152,16 @@ const EditUserInfo = (props) => {
             >
               Показывать меня в списке
             </Cell>
+            <Cell
+              asideContent={
+                <Switch
+                  onChange={() => props.changeScheme( props.scheme, true )}
+                  checked={props.scheme === "bright_light" ? "checked" : ""}
+                />
+              }
+            >
+              Выбрать тему
+            </Cell>
             <Button
               //   onClick={props.userInfo.design || props.userInfo.frontend || props.userInfo.backend ? props.createUser : null}
               onClick={localUpdateUserInfo(localUserInfo)}
@@ -176,7 +186,9 @@ EditUserInfo.propTypes = {
   changeUserInfo: PropTypes.func.isRequired,
   createUser: PropTypes.func.isRequired,
   setUserInfo: PropTypes.func.isRequired,
-  setPopout: PropTypes.func.isRequired
+  setPopout: PropTypes.func.isRequired,
+  changeScheme: PropTypes.func.isRequired,
+  scheme: PropTypes.string.isRequired
 };
 
 export default EditUserInfo;

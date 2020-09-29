@@ -20,6 +20,7 @@ import PanelHeaderButton from "@vkontakte/vkui/dist/components/PanelHeaderButton
 import FormLayout from "@vkontakte/vkui/dist/components/FormLayout/FormLayout";
 import Checkbox from "@vkontakte/vkui/dist/components/Checkbox/Checkbox";
 import Select from "@vkontakte/vkui/dist/components/Select/Select";
+import ConfigProvider from "@vkontakte/vkui/dist/components/ConfigProvider/ConfigProvider";
 
 const osName = platform();
 
@@ -49,8 +50,10 @@ const App = () => {
     backend: false,
     mobile: false,
     desktop: false,
-    city: ""
+    city: "",
   });
+  const [scheme, SetStateScheme] = useState("bright_light");
+  const lights = ["bright_light", "client_light"];
   // useEffect(() => {setPopout(<ScreenSpinner size="large" />)}, [activePanel]);
 
   // useEffect(() => {
@@ -74,7 +77,7 @@ const App = () => {
           return currentPartner;
         }
       });
-      setPartners([...newPartners, updatedPartner]);
+      setPartners([updatedPartner, ...newPartners]);
     });
     // channel.bind("updated", (newPartners) => {
     //   setPartners(newPartners);
@@ -86,12 +89,24 @@ const App = () => {
     };
   }, [partners]);
 
+  function changeScheme(scheme, needChange = false) {
+    let isLight = lights.includes(scheme);
+
+    if (needChange) {
+      isLight = !isLight;
+    }
+    SetStateScheme(isLight ? "bright_light" : "space_gray");
+
+    bridge.send("VKWebAppSetViewSettings", {
+      status_bar_style: isLight ? "dark" : "light",
+      action_bar_color: isLight ? "#000" : "#fff",
+    });
+  }
+
   useEffect(() => {
     bridge.subscribe(({ detail: { type, data } }) => {
       if (type === "VKWebAppUpdateConfig") {
-        const schemeAttribute = document.createAttribute("scheme");
-        schemeAttribute.value = data.scheme ? data.scheme : "client_light";
-        document.body.attributes.setNamedItem(schemeAttribute);
+        changeScheme(data.scheme);
       }
     });
 
@@ -157,7 +172,7 @@ const App = () => {
       show_user: newUserInfo.show_user,
     });
     setActivePanel("search");
-    setPopout(null)
+    setPopout(null);
   };
 
   // const updateUserInfo = ( newUserInfo ) => async ( e ) => {
@@ -216,11 +231,11 @@ const App = () => {
   var partnersCities = [];
   partners.forEach(function (partner, i, partners) {
     let partnersCitiesIds = [];
-    partnersCities.forEach(function (partnerCity, i, partnersCities_ex){
+    partnersCities.forEach(function (partnerCity, i, partnersCities_ex) {
       partnersCitiesIds.push(partnerCity.id);
     });
-    if (!(partnersCitiesIds.includes(partner.city.id))){
-      partnersCities.push(partner.city)
+    if (!partnersCitiesIds.includes(partner.city.id)) {
+      partnersCities.push(partner.city);
     }
   });
 
@@ -302,14 +317,20 @@ const App = () => {
             >
               Desktop разработчик
             </Checkbox>
-            <Select placeholder="Выберите город" value={filterOptions.city} onChange={(e) =>
+            <Select
+              placeholder="Выберите город"
+              value={filterOptions.city}
+              onChange={(e) =>
                 setFilterOptions({
                   ...filterOptions,
                   city: e.currentTarget.value,
                 })
-              }>
+              }
+            >
               {partnersCities.map((partnerCity, index) => (
-                <option key={index} value={partnerCity.id}>{partnerCity.title}</option>
+                <option key={index} value={partnerCity.id}>
+                  {partnerCity.title}
+                </option>
               ))}
             </Select>
           </FormLayoutGroup>
@@ -319,47 +340,51 @@ const App = () => {
   );
 
   return (
-    <View activePanel={activePanel} popout={popout} modal={modal}>
-      <Home
-        id="home"
-        fetchedUser={fetchedUser}
-        go={go}
-        partners={partners}
-        userInfo={userInfo}
-        setUserInfo={setUserInfo}
-        setActivePanel={setActivePanel}
-        setPopout={setPopout}
-      />
-      <StartChoosePage
-        id="start_choose_page"
-        go={go}
-        userInfo={userInfo}
-        changeUserInfo={changeUserInfo}
-        createUser={createUser}
-        partners={partners}
-        setUserInfo={setUserInfo}
-        setActivePanel={setActivePanel}
-      />
-      <SearchPage
-        id="search"
-        go={go}
-        userInfo={userInfo}
-        setPartners={setPartners}
-        partners={partners}
-        activeModal={activeModal}
-        setActiveModal={setActiveModal}
-        filterOptions={filterOptions}
-        setPopout={setPopout}
-      />
-      <EditUserInfo
-        id="user_info"
-        go={go}
-        userInfo={userInfo}
-        changeUserInfo={changeUserInfo}
-        setUserInfo={setUserInfo}
-        setPopout={setPopout}
-      />
-    </View>
+    <ConfigProvider isWebView={true} scheme={scheme}>
+      <View activePanel={activePanel} popout={popout} modal={modal}>
+        <Home
+          id="home"
+          fetchedUser={fetchedUser}
+          go={go}
+          partners={partners}
+          userInfo={userInfo}
+          setUserInfo={setUserInfo}
+          setActivePanel={setActivePanel}
+          setPopout={setPopout}
+        />
+        <StartChoosePage
+          id="start_choose_page"
+          go={go}
+          userInfo={userInfo}
+          changeUserInfo={changeUserInfo}
+          createUser={createUser}
+          partners={partners}
+          setUserInfo={setUserInfo}
+          setActivePanel={setActivePanel}
+        />
+        <SearchPage
+          id="search"
+          go={go}
+          userInfo={userInfo}
+          setPartners={setPartners}
+          partners={partners}
+          activeModal={activeModal}
+          setActiveModal={setActiveModal}
+          filterOptions={filterOptions}
+          setPopout={setPopout}
+        />
+        <EditUserInfo
+          id="user_info"
+          go={go}
+          userInfo={userInfo}
+          changeUserInfo={changeUserInfo}
+          setUserInfo={setUserInfo}
+          setPopout={setPopout}
+          changeScheme={changeScheme}
+          scheme={scheme}
+        />
+      </View>
+    </ConfigProvider>
   );
 };
 

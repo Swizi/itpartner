@@ -44,13 +44,31 @@ const SearchPage = (props) => {
   const [searchValue, setSearchValue] = useState("");
   useEffect(() => {
     axios.get("/partners/sync").then((response) => {
-      props.setPartners(response.data);
+      var arrayPartners = response.data;
+      arrayPartners.forEach(function (arrayPartner, i, arrayPartners) {
+      if (arrayPartner.vk_id === props.userInfo.vk_id) {
+        arrayPartners[i] = arrayPartners[0];
+        arrayPartners[0] = props.userInfo;
+        }
+      });
+      props.setPartners(arrayPartners);
     });
   }, [props.activeModal, searchValue]);
 
   const [filteredPartners, setFilteredPartners] = useState(
     props.partners || []
   );
+
+  // useEffect(() => {
+  //   var arrayPartners = filteredPartners;
+  //   let i = 0;
+  //   arrayPartners.forEach(function (arrayPartner, i, arrayPartners) {
+  //     if (arrayPartner.vk_id === props.userInfo.vk_id) {
+  //       arrayPartners[i] = arrayPartners[0];
+  //       arrayPartners[0] = props.userInfo;
+  //     }
+  //   });
+  // }, []);
 
   const partnersSearch = (e) => {
     var arrayPartners = filteredPartners;
@@ -125,6 +143,13 @@ const SearchPage = (props) => {
           }
         });
       }
+      let i = 0;
+      ex_partners.forEach(function (ex_partner, i, ex_partners) {
+        if (ex_partner.vk_id === props.userInfo.vk_id) {
+          ex_partners[i] = ex_partners[0];
+          ex_partners[0] = props.userInfo;
+        }
+      });
       setFilteredPartners(ex_partners);
       // if ((ex_partners) && (filterOptions.design || filterOptions.frontend || filterOptions.backend)){
       //   setfilteredPartners(ex_partners);
@@ -255,7 +280,7 @@ SearchPage.propTypes = {
   partners: PropTypes.array.isRequired,
   setPartners: PropTypes.func.isRequired,
   userInfo: PropTypes.object.isRequired,
-  filterOptions: PropTypes.object.isRequired
+  filterOptions: PropTypes.object.isRequired,
 };
 
 export default SearchPage;
