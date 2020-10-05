@@ -54,10 +54,6 @@ const App = () => {
   });
   const [scheme, SetStateScheme] = useState("bright_light");
   const lights = ["bright_light", "client_light"];
-  // useEffect(() => {setPopout(<ScreenSpinner size="large" />)}, [activePanel]);
-
-  // useEffect(() => {
-  // }, [userInfo]);
 
   useEffect(() => {
     const pusher = new Pusher("c9562e8ed2d754281bd6", {
@@ -67,7 +63,6 @@ const App = () => {
 
     const channel = pusher.subscribe("partners");
     channel.bind("inserted", (newPartner) => {
-      // alert(JSON.stringify(newPartner));
       setPartners([...partners, newPartner]);
     });
 
@@ -77,11 +72,9 @@ const App = () => {
           return currentPartner;
         }
       });
+      setUserInfo(updatedPartner);
       setPartners([updatedPartner, ...newPartners]);
     });
-    // channel.bind("updated", (newPartners) => {
-    //   setPartners(newPartners);
-    // });
 
     return () => {
       channel.unbind_all();
@@ -97,22 +90,24 @@ const App = () => {
     }
     SetStateScheme(isLight ? "bright_light" : "space_gray");
 
-    bridge.send("VKWebAppSetViewSettings", {
-      status_bar_style: isLight ? "dark" : "light",
-      action_bar_color: isLight ? "#000" : "#fff",
-    });
+    bridge.send('VKWebAppSetViewSettings', {
+	    'status_bar_style': isLight ? 'dark' : 'light',
+	    'action_bar_color': isLight ? '#ffffff' : '#191919'
+	});
   }
 
   useEffect(() => {
     bridge.subscribe(({ detail: { type, data } }) => {
       if (type === "VKWebAppUpdateConfig") {
+        const schemeAttribute = document.createAttribute('scheme');
+				schemeAttribute.value = data.scheme ? data.scheme : 'client_light';
+				document.body.attributes.setNamedItem(schemeAttribute);
         changeScheme(data.scheme);
       }
     });
 
     async function fetchData() {
       const user = await bridge.send("VKWebAppGetUserInfo");
-      console.log(user);
       setUser(user);
       const ex_obj = {
         design: userInfo.design,
@@ -133,7 +128,7 @@ const App = () => {
       ex_obj.photo = user.photo_100;
       ex_obj.city = user.city;
       setUserInfo(ex_obj);
-      await axios.get("/partners/sync").then((response) => {
+      await axios.get(`/partners/sync${window.location.search}`).then((response) => {
         setPartners(response.data);
         response.data.forEach(function (partner, i, partners) {
           if (partner.vk_id === user.id) {
@@ -157,7 +152,7 @@ const App = () => {
 
     setUserInfo(newUserInfo);
 
-    await axios.post("/partners/new", {
+    await axios.post(`/partners/new${window.location.search}`, {
       design: newUserInfo.design,
       frontend: newUserInfo.frontend,
       backend: newUserInfo.backend,
@@ -174,25 +169,6 @@ const App = () => {
     setActivePanel("search");
     setPopout(null);
   };
-
-  // const updateUserInfo = ( newUserInfo ) => async ( e ) => {
-  //   setPopout(true);
-
-  //   setUserInfo(newUserInfo);
-
-  //   await axios.post("/partner/update", {
-  //     design: newUserInfo.design,
-  //     frontend: newUserInfo.frontend,
-  //     backend: newUserInfo.backend,
-  //     website: newUserInfo.website,
-  //     vk_id: newUserInfo.vk_id,
-  //     first_name: newUserInfo.first_name,
-  //     last_name: newUserInfo.last_name,
-  //     photo: newUserInfo.photo,
-  //     show_user: newUserInfo.show_user,
-  //   });
-  //   setPopout(null);
-  // };
 
   const changeUserInfo = (e) => {
     const ex_obj = userInfo;
@@ -226,7 +202,6 @@ const App = () => {
       setUserInfo(ex_obj);
     }
   };
-  // console.log(userInfo);
 
   var partnersCities = [];
   partners.forEach(function (partner, i, partners) {
@@ -234,7 +209,7 @@ const App = () => {
     partnersCities.forEach(function (partnerCity, i, partnersCities_ex) {
       partnersCitiesIds.push(partnerCity.id);
     });
-    if (!partnersCitiesIds.includes(partner.city.id)) {
+    if ((!partnersCitiesIds.includes(partner.city.id)) && (partner.show_user)) {
       partnersCities.push(partner.city);
     }
   });

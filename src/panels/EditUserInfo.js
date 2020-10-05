@@ -31,7 +31,7 @@ const EditUserInfo = (props) => {
 
   const localUpdateUserInfo = (newUserInfo) => async (e) => {
     props.setPopout(<ScreenSpinner size="large" />);
-    await axios.post("/partner/update", {
+    await axios.post(`/partner/update${window.location.search}`, {
       design: newUserInfo.design,
       frontend: newUserInfo.frontend,
       backend: newUserInfo.backend,
@@ -163,12 +163,10 @@ const EditUserInfo = (props) => {
               Выбрать тему
             </Cell>
             <Button
-              //   onClick={props.userInfo.design || props.userInfo.frontend || props.userInfo.backend ? props.createUser : null}
               onClick={localUpdateUserInfo(localUserInfo)}
               data-to="search"
               size="xl"
               mode="primary"
-              //   style={{opacity: props.userInfo.design || props.userInfo.frontend || props.userInfo.backend ? "1" : "0.6"}}
             >
               Сохранить
             </Button>

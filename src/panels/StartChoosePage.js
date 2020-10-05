@@ -23,17 +23,6 @@ const osName = platform();
 const StartChoosePage = (props) => {
   const [localUserInfo, setLocalUserInfo] = useState(props.userInfo || {});
 
-  // useEffect(() => {
-	// 	props.partners.forEach(function (partner, i, partners) {
-	// 	  if (partner.vk_id === props.userInfo.vk_id) {
-	// 		props.setUserInfo(partner);
-	// 		props.setActivePanel("search");
-	// 	  }
-	// 	});
-	//   }, [props.partners, props.userInfo]);
-
-  // console.log(localUserInfo);
-
   return (
     <Panel id={props.id}>
       <PanelHeader

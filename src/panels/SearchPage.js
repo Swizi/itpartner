@@ -34,112 +34,93 @@ import FormLayoutGroup from "@vkontakte/vkui/dist/components/FormLayoutGroup/For
 import View from "@vkontakte/vkui/dist/components/View/View";
 
 import Link from "@vkontakte/vkui/dist/components/Link/Link";
+import Spinner from "@vkontakte/vkui/dist/components/Spinner/Spinner";
 
 import "./SearchPage.css";
+import { Document } from "mongoose";
 
 const osName = platform();
 
 const SearchPage = (props) => {
   const [activePanel, setActivePanel] = useState(props.id || null);
   const [searchValue, setSearchValue] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [pageYOffset, setPageYOffset] = useState(0);
+  const [page, setPage] = useState(0);
+
+  
+  const [fullPartners, setFullPartners] = useState([]);
+  const [filteredPartners, setFilteredPartners] = useState([]);
+
   useEffect(() => {
-    axios.get("/partners/sync").then((response) => {
-      var arrayPartners = response.data;
-      arrayPartners.forEach(function (arrayPartner, i, arrayPartners) {
-      if (arrayPartner.vk_id === props.userInfo.vk_id) {
-        arrayPartners[i] = arrayPartners[0];
-        arrayPartners[0] = props.userInfo;
-        }
+    if (props.partners.length !== filteredPartners.length) {
+      setLoading(true);
+    }
+    axios
+      .get(`/partners/users${window.location.search}`, {
+        params: { pageNum: page },
+      })
+      .then((response) => {
+        var arrayPartners = response.data;
+        arrayPartners.forEach(function (arrayPartner, i, arrayPartners) {
+          if (arrayPartner.vk_id === props.userInfo.vk_id) {
+            arrayPartners[i] = arrayPartners[0];
+            arrayPartners[0] = props.userInfo;
+          }
+        });
+        setFilteredPartners((prev) => [...prev, ...arrayPartners]);
+        setFullPartners((prev) => [...prev, ...arrayPartners]);
+        setLoading(false);
       });
-      props.setPartners(arrayPartners);
-    });
-  }, [props.activeModal, searchValue]);
-
-  const [filteredPartners, setFilteredPartners] = useState(
-    props.partners || []
-  );
-
-  // useEffect(() => {
-  //   var arrayPartners = filteredPartners;
-  //   let i = 0;
-  //   arrayPartners.forEach(function (arrayPartner, i, arrayPartners) {
-  //     if (arrayPartner.vk_id === props.userInfo.vk_id) {
-  //       arrayPartners[i] = arrayPartners[0];
-  //       arrayPartners[0] = props.userInfo;
-  //     }
-  //   });
-  // }, []);
+  }, [page]);
 
   const partnersSearch = (e) => {
     var arrayPartners = filteredPartners;
     setSearchValue(e.currentTarget.value);
-    if (e.currentTarget.value !== "") {
-      setFilteredPartners(
-        arrayPartners.filter(function (filteredPartner, i, arrayPartners) {
-          if (
-            !(
-              filteredPartner.first_name
-                .toLowerCase()
-                .indexOf(searchValue.toLowerCase()) === -1
-            ) ||
-            !(
-              filteredPartner.last_name
-                .toLowerCase()
-                .indexOf(searchValue.toLowerCase()) === -1
-            )
-          ) {
-            return arrayPartners[i];
-          }
-        })
-      );
-    } else {
-      setFilteredPartners(props.partners || []);
-    }
-    // setFilteredPartners(ex_partners);
   };
 
   useEffect(() => {
     if (props.activeModal === null) {
-      var ex_partners = props.partners || [];
+      var ex_partners = fullPartners;
       if (props.filterOptions.design === true) {
-        ex_partners.forEach(function (filteredPartner, i, ex_partners) {
-          if (filteredPartner.design !== true) {
-            delete ex_partners[i];
+        ex_partners = ex_partners.filter(function (filteredPartner, i, ex_partners) {
+          if (filteredPartner.design === true) {
+            return ex_partners[i];
           }
         });
       }
       if (props.filterOptions.frontend === true) {
-        ex_partners.forEach(function (filteredPartner, i, ex_partners) {
-          if (filteredPartner.frontend !== true) {
-            delete ex_partners[i];
+        ex_partners = ex_partners.filter(function (filteredPartner, i, ex_partners) {
+          if (filteredPartner.frontend === true) {
+            return ex_partners[i];
           }
         });
       }
       if (props.filterOptions.backend === true) {
-        ex_partners.forEach(function (filteredPartner, i, ex_partners) {
-          if (filteredPartner.backend !== true) {
-            delete ex_partners[i];
+        ex_partners = ex_partners.filter(function (filteredPartner, i, ex_partners) {
+          if (filteredPartner.backend === true) {
+            return ex_partners[i];
           }
         });
       }
       if (props.filterOptions.mobile === true) {
-        ex_partners.forEach(function (filteredPartner, i, ex_partners) {
-          if (filteredPartner.mobile !== true) {
-            delete ex_partners[i];
+        ex_partners = ex_partners.filter(function (filteredPartner, i, ex_partners) {
+          if (filteredPartner.mobile === true) {
+            return ex_partners[i];
           }
         });
       }
       if (props.filterOptions.desktop === true) {
-        ex_partners.forEach(function (filteredPartner, i, ex_partners) {
-          if (filteredPartner.desktop !== true) {
-            delete ex_partners[i];
+        ex_partners = ex_partners.filter(function (filteredPartner, i, ex_partners) {
+          if (filteredPartner.desktop === true) {
+            return ex_partners[i];
           }
         });
       }
       if (props.filterOptions.city !== "") {
-        ex_partners.forEach(function (filteredPartner, i, ex_partners) {
-          if (filteredPartner.city.id.toString() !== props.filterOptions.city) {
-            delete ex_partners[i];
+        ex_partners = ex_partners.filter(function (filteredPartner, i, ex_partners) {
+          if (filteredPartner.city.id.toString() === props.filterOptions.city) {
+            return ex_partners[i];
           }
         });
       }
@@ -150,48 +131,69 @@ const SearchPage = (props) => {
           ex_partners[0] = props.userInfo;
         }
       });
+      if (searchValue !== "") {
+        var userVal = searchValue;
+        userVal = userVal.replace(/\s/g, '');
+        ex_partners = 
+          ex_partners.filter(function (filteredPartner, i, arrayPartners) {
+            var first_last_name = filteredPartner.first_name + filteredPartner.last_name;
+            var last_first_name = filteredPartner.last_name + filteredPartner.first_name;
+            if (
+              !(
+                filteredPartner.first_name
+                  .toLowerCase()
+                  .indexOf(userVal.toLowerCase()) === -1
+              ) ||
+              !(
+                filteredPartner.last_name
+                  .toLowerCase()
+                  .indexOf(userVal.toLowerCase()) === -1
+              ) ||
+              !(
+                first_last_name
+                  .toLowerCase()
+                  .indexOf(userVal.toLowerCase()) === -1
+              ) ||
+              !(
+                last_first_name
+                  .toLowerCase()
+                  .indexOf(userVal.toLowerCase()) === -1
+              )
+            ) {
+              return arrayPartners[i];
+            }
+          })
+      }
       setFilteredPartners(ex_partners);
-      // if ((ex_partners) && (filterOptions.design || filterOptions.frontend || filterOptions.backend)){
-      //   setfilteredPartners(ex_partners);
-      //   console.log(ex_partners);
-      // }
-      // if (
-      //   !(
-      //     props.filterOptions.design ||
-      //     props.filterOptions.frontend ||
-      //     props.filterOptions.backend
-      //   )
-      // ) {
-      //   setFilteredPartners(props.partners || []);
-      // }
     }
-  }, [props.activeModal]);
+  }, [props.activeModal, searchValue]);
 
+
+  const handleScroll = (event) => {
+    const { scrollTop, clientHeight, scrollHeight } = event.currentTarget;
+    if (scrollHeight - Math.trunc(scrollTop) === clientHeight) {
+      setPage((prev) => prev + 1);
+    }
+  };
   return (
-    <Panel id={props.id}>
+    <Panel id={props.id} style={{ overflowY: "hidden" }}>
       <PanelHeader
-        // right={
-        //   <PanelHeaderButton onClick={props.go} data-to="search_options">
-        //     {osName === IOS ? <Icon28AddOutline /> : <Icon24AddOutline />}
-        //   </PanelHeaderButton>
-        // }
         left={
           <PanelHeaderButton onClick={() => props.setActiveModal("filters")}>
             {osName === IOS ? <Icon28AddOutline /> : <Icon24AddOutline />}
           </PanelHeaderButton>
         }
-        // right={
-        //   <PanelHeaderButton data-to="user_info" onClick={props.go}>
-        //     {osName === IOS ? <Icon28UserOutline /> : <Icon24UserOutline />}
-        //   </PanelHeaderButton>
-        // }
       >
         Поиск партнёра
       </PanelHeader>
       <FormLayout>
         <Search value={searchValue} onChange={partnersSearch} after={null} />
       </FormLayout>
-      <Group>
+      <Group
+        onScroll={handleScroll}
+        id="content"
+        style={{ overflowY: "scroll", height: "calc(100vh - 133px)" }}
+      >
         <Div>
           {filteredPartners.map((partner, index) => (
             <RichCell
@@ -231,13 +233,11 @@ const SearchPage = (props) => {
                   Сайт-портфолио
                 </Link>
               }
-              // text="Держи за обед в EZO"
               caption={`${partner.design ? "Дизайн" : ""} ${
                 partner.frontend ? "Фронтенд" : ""
               } ${partner.backend ? "Бэкэнд" : ""} ${
                 partner.mobile ? "Мобайл" : ""
               } ${partner.desktop ? "Десктоп" : ""}`}
-              // after="+ 1 500 ₽"
               actions={
                 <React.Fragment>
                   <Button
@@ -247,16 +247,6 @@ const SearchPage = (props) => {
                   >
                     Зайти в вк
                   </Button>
-                  {/* <Button
-                    mode="secondary"
-                    style={{ opacity: partner.website != "" ? "1" : "0.6" }}
-                    href={`${
-                      partner.website != "" ? `https://${partner.website}` : ""
-                    }`}
-                    target="__blank"
-                  >
-                    Зайти на сайт
-                  </Button> */}
                 </React.Fragment>
               }
             >
@@ -268,6 +258,7 @@ const SearchPage = (props) => {
                 : null}
             </RichCell>
           ))}
+          {loading && <Spinner size="medium" style={{ marginTop: 20 }} />}
         </Div>
       </Group>
     </Panel>

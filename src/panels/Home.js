@@ -18,15 +18,6 @@ const Home = ({
   setUserInfo,
   setActivePanel
 }) => {
-  // useEffect(() => {
-  // 	partners.forEach(function (partner, i, partners) {
-  // 	  if (partner.vk_id === userInfo.vk_id) {
-  // 		setUserInfo(partner);
-  // 		setActivePanel("search");
-  // 	  }
-  // 	});
-  //   }, [partners, userInfo]);
-
   return (
     <Panel id={id}>
       <PanelHeader>Партнёр в Айти</PanelHeader>
