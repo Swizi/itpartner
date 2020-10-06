@@ -40,6 +40,9 @@ import Card from "@vkontakte/vkui/dist/components/Card/Card";
 import CardGrid from "@vkontakte/vkui/dist/components/CardGrid/CardGrid";
 import Spinner from "@vkontakte/vkui/dist/components/Spinner/Spinner";
 
+import Icon24ViewOutline from "@vkontakte/icons/dist/24/view_outline";
+import Icon24HideOutline from "@vkontakte/icons/dist/24/hide_outline";
+
 import "./SearchPage.css";
 import { Document } from "mongoose";
 
@@ -226,28 +229,38 @@ const SearchPage = (props) => {
         <Div>
           {filteredPartners.map((partner, index) => (
             <CardGrid>
-              <Card size="l" mode="shadow">
+              <Card size="l" mode="outline">
                 <div className="card_wrapper">
                   <div className="user_info-block">
                     <Avatar size={72} src={partner.photo} />
                     <div style={{ marginLeft: 10 }}>
-                      <Title
-                        level="2"
-                        weight="semibold"
-                        style={{ marginBottom: 12 }}
-                      >
-                        {partner.first_name} {partner.last_name}
-                      </Title>
-                      <Subhead weight="medium" style={{ marginBottom: 5 }}>
+                      <div class="user_name-block">
+                        <Title
+                          level="2"
+                          weight="semibold"
+                          style={{ marginBottom: 2 }}
+                        >
+                          {partner.first_name} {partner.last_name}
+                        </Title>
+                        {partner.vk_id === props.userInfo.vk_id ? (
+                          partner.show_user ? (
+                            <Icon24ViewOutline style={{marginLeft: 5}}/>
+                          ) : (
+                            <Icon24HideOutline style={{marginLeft: 5}}/>
+                          )
+                        ) : null}
+                      </div>
+                      <Subhead weight="regular" style={{ marginBottom: 5 }}>
                         {partner.design ? "Дизайн " : ""}
                         {partner.frontend ? "Фронтенд " : ""}
                         {partner.backend ? "Бэкэнд " : ""}
                         {partner.mobile ? "Мобайл " : ""}
                         {partner.desktop ? "Десктоп" : ""}
                       </Subhead>
-                      <Link
+                      <Button
                         style={{
                           display: partner.website !== "" ? "block" : "none",
+                          width: "150px"
                         }}
                         href={`${
                           partner.website !== ""
@@ -257,16 +270,25 @@ const SearchPage = (props) => {
                         target="_blank"
                       >
                         Сайт-портфолио
-                      </Link>
+                      </Button>
                     </div>
                   </div>
                   <div className="user_connect_block">
-                    {partner.vk_id === props.userInfo.vk_id ? <Button mode="secondary" data-to="user_info" onClick={props.go}>Настройки</Button> : null}
+                    {partner.vk_id === props.userInfo.vk_id ? (
+                      <Button
+                        mode="secondary"
+                        data-to="user_info"
+                        onClick={props.go}
+                      >
+                        Настройки
+                      </Button>
+                    ) : null}
                     <Button
                       className="enter_vk_button"
                       mode="primary"
                       href={`https://vk.com/id${partner.vk_id}`}
                       target="__blank"
+                      style={{marginTop: partner.vk_id === props.userInfo.vk_id ? 10 : 0}}
                     >
                       Зайти в вк
                     </Button>

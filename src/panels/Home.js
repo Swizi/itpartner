@@ -8,6 +8,10 @@ import Cell from "@vkontakte/vkui/dist/components/Cell/Cell";
 import Div from "@vkontakte/vkui/dist/components/Div/Div";
 import Avatar from "@vkontakte/vkui/dist/components/Avatar/Avatar";
 import Text from "@vkontakte/vkui/dist/components/Typography/Text/Text";
+import Title from "@vkontakte/vkui/dist/components/Typography/Title/Title";
+
+import Card from "@vkontakte/vkui/dist/components/Card/Card";
+import CardGrid from "@vkontakte/vkui/dist/components/CardGrid/CardGrid";
 
 const Home = ({
   id,
@@ -50,21 +54,25 @@ const Home = ({
           alignItems: "center",
         }}
       >
-        <Div
+      <CardGrid>
+        <Card
           style={{
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
+            padding: 10
           }}
+          size="l" mode="outline"
         >
-          <Text weight="medium" style={{ marginBottom: 16 }}>
+          <Title level="2" weight="bold" style={{ marginBottom: 32, textAlign: "center" }}>
             Хотите найти разработчика или дизайнера в свой проект?
-          </Text>
-          <Button mode="primary" onClick={go} data-to="start_choose_page">
-            Хочу
+          </Title>
+          <Button mode="primary" size="xl" onClick={go} data-to="start_choose_page">
+            Найти партнёра
           </Button>
-        </Div>
+        </Card>
+        </CardGrid>
       </Group>
     </Panel>
   );

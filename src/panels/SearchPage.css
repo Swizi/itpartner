@@ -2,14 +2,14 @@
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .user_connect_block{
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: flex-end;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .enter_vk_button{
@@ -26,6 +26,13 @@
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
+}
+
+.user_name-block{
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 @media(max-width: 500px){
